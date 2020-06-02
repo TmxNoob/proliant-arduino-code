@@ -1,13 +1,17 @@
-unsigned long lastCommand;
+/*
+ * TmxPro's fan controller code
+ * Improve or do whatever you want with it :P
+ */
 
 unsigned long commandTimeout = 1000000; //60s
-unsigned char minSpeed = 15;
-unsigned char maxSpeed = 255;
-unsigned char defaultSpeed = 40;
+unsigned char minSpeed = 15; // about 6% fan speed, this is about the minimum pwm where the fans spin
+unsigned char maxSpeed = 255; // idk why anyone would want to change this but left the option here
+unsigned char defaultSpeed = 40; // about 15% fan speed - this is the default speed when on boot or when havent gotten a command in commandTimeout time period
 
+
+//do not touch following values!
 String serialBuffer = "";
 bool stringComplete = false;
-
 char fanPins[] = {3,5,6,9,10,11};
 char numFans = sizeof(fanPins);
 
@@ -17,6 +21,7 @@ void setupFans() {
     setFan(c,defaultSpeed);
   }
 }
+
 void setFan(char fan,unsigned char spd){
  unsigned char spdPwm = 255-(max(minSpeed,min(spd,maxSpeed))); //make sure speed is between max and min and hp proliant fans use inversed pwm
  analogWrite(fanPins[fan],spdPwm);
@@ -31,11 +36,13 @@ void setup(){
   setupFans(); //set fan pwm pins as outputs
   resetSerialBuffer();
 
-  //change arduino clocks or smth to set pwm frequency to like 32khz or smth like that for fans xd dont care aslong as it works
+  //set pwm frequency, stolen from https://github.com/Max-Sum/HP-fan-proxy
   TCCR0B = _BV(CS00);
   TCCR1B = _BV(CS00);
   TCCR2B = _BV(CS00);
   TCCR0A = _BV(COM0A1) | _BV(COM0B1) | _BV(WGM00);
+
+
 
   Serial.begin(9600);
   Serial.setTimeout(100000);
@@ -52,6 +59,8 @@ void loop(){
     //process serial event
     char cmdbuf[64];
     serialBuffer.getBytes(cmdbuf,64);
+    
+    //really ugly but made it work with python, now too lazy to make it actually cool
     switch(cmdbuf[0]){
       case 's':
         Serial.println("fan number:");
@@ -64,17 +73,6 @@ void loop(){
         }else{
           Serial.println("fan out of range");
         }
-        break;
-      case 'g':
-        Serial.println("fan speed is");
-        Serial.println(millis());
-        Serial.println(lastCommand);
-        break;
-      case 'c':
-        Serial.println("config edited");
-        break;
-      default:
-        Serial.println("unknown command");
         break;
     }
     lastCommand = millis();
