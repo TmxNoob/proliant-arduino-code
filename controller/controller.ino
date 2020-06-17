@@ -58,7 +58,7 @@ void loop(){
   }
   if(stringComplete){
     //process serial event
-    char cmdbuf[64];
+    unsigned char cmdbuf[64];
     serialBuffer.getBytes(cmdbuf,64);
     
     //really ugly but made it work with python, now too lazy to make it actually cool
