@@ -14,6 +14,7 @@ String serialBuffer = "";
 bool stringComplete = false;
 char fanPins[] = {3,5,6,9,10,11};
 char numFans = sizeof(fanPins);
+long lastCommand = 0;
 
 void setupFans() {
   for(char c = 0;c<numFans;c++){
